@@ -21,7 +21,16 @@ To start a new task using this user_app1 as a template:
 /**********************************************************************************************************************
 Type Definitions
 **********************************************************************************************************************/
-
+typedef enum {
+    LCD_LED_RED_RAMP_UP,
+    LCD_LED_RED_GREEN_RAMP_UP,
+    LCD_LED_GREEN_RED_DOWN,
+    LCD_LED_GREEN_BLUE_RAMP_UP,
+    LCD_LED_BLUE_GREEN_RAMP_DOWN,
+    LCD_LED_BLUE_RED_RAMP_UP,
+    LCD_LED_BLUE_RED_GREEN_RAMP_UP,
+    LCD_ALL_RAMP_DOWN,
+} LCD_LED_STATE_t;
 
 /**********************************************************************************************************************
 Function Declarations

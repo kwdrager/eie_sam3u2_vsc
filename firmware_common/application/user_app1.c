@@ -67,6 +67,8 @@ static fnCode_type UserApp1_pfStateMachine;               /*!< @brief The state 
 Function Definitions
 **********************************************************************************************************************/
 
+static void runLCDStateMachine(void);
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*! @publicsection */                                                                                            
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -140,7 +142,17 @@ State Machine Function Definitions
 /* What does this state do? */
 static void UserApp1SM_Idle(void)
 {
-     
+  static uint16_t timerCounter = 0;
+
+  timerCounter++;
+
+  if(timerCounter > 100)
+  {
+    runLCDStateMachine();
+    timerCounter = 0;
+  }
+
+
 } /* end UserApp1SM_Idle() */
      
 
@@ -152,6 +164,123 @@ static void UserApp1SM_Error(void)
 } /* end UserApp1SM_Error() */
 
 
+
+static void runLCDStateMachine(void)
+{
+  static LCD_LED_STATE_t  LCDLedState = LCD_LED_RED_RAMP_UP;
+  static LedRateType   LCD_LED_red_pwm   = LED_PWM_0;
+  static LedRateType   LCD_LED_green_pwm = LED_PWM_0;
+  static LedRateType   LCD_LED_blue_pwm  = LED_PWM_0;
+
+  switch (LCDLedState) {
+
+    case LCD_LED_RED_RAMP_UP:
+      LCD_LED_blue_pwm = LED_PWM_0;
+      LCD_LED_green_pwm = LED_PWM_0;      
+      LedPWM(LCD_RED, LCD_LED_red_pwm++);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_red_pwm >= LED_PWM_100)
+      {
+        LCDLedState = LCD_LED_RED_GREEN_RAMP_UP;
+      }
+      break;
+
+    case LCD_LED_RED_GREEN_RAMP_UP: 
+      LCD_LED_red_pwm = LED_PWM_100;
+      LCD_LED_blue_pwm = LED_PWM_0;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm++);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_green_pwm >= LED_PWM_100)
+      {
+        LCDLedState = LCD_LED_GREEN_RED_DOWN;
+      }
+      break;
+
+    case LCD_LED_GREEN_RED_DOWN: 
+      LCD_LED_green_pwm = LED_PWM_100;
+      LCD_LED_blue_pwm = LED_PWM_0;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm--);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_red_pwm <= LED_PWM_0)
+      {
+        LCDLedState = LCD_LED_GREEN_BLUE_RAMP_UP;
+      }
+      break;
+
+    case LCD_LED_GREEN_BLUE_RAMP_UP: 
+      LCD_LED_green_pwm = LED_PWM_100;
+      LCD_LED_red_pwm = LED_PWM_0;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm++);
+
+      if(LCD_LED_blue_pwm >= LED_PWM_100)
+      {
+        LCDLedState = LCD_LED_BLUE_GREEN_RAMP_DOWN;
+      }
+      break;
+
+    case LCD_LED_BLUE_GREEN_RAMP_DOWN: 
+      LCD_LED_blue_pwm = LED_PWM_100;
+      LCD_LED_red_pwm = LED_PWM_0;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm--);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_green_pwm <= LED_PWM_0)
+      {
+        LCDLedState = LCD_LED_BLUE_RED_RAMP_UP;
+      }
+      break;
+
+    case LCD_LED_BLUE_RED_RAMP_UP: 
+      LCD_LED_blue_pwm = LED_PWM_100;
+      LCD_LED_green_pwm = LED_PWM_0;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm++);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_red_pwm >= LED_PWM_100)
+      {
+        LCDLedState = LCD_LED_BLUE_RED_GREEN_RAMP_UP;
+      }
+      break;
+
+    case LCD_LED_BLUE_RED_GREEN_RAMP_UP: 
+      LCD_LED_blue_pwm = LED_PWM_100;
+      LCD_LED_red_pwm = LED_PWM_100;     
+      LedPWM(LCD_RED, LCD_LED_red_pwm);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm++);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm);
+
+      if(LCD_LED_green_pwm >= LED_PWM_100)
+      {
+        LCDLedState = LCD_ALL_RAMP_DOWN;
+      }
+      break;
+
+    case LCD_ALL_RAMP_DOWN:     
+      LedPWM(LCD_RED, LCD_LED_red_pwm--);
+      LedPWM(LCD_GREEN, LCD_LED_green_pwm--);
+      LedPWM(LCD_BLUE, LCD_LED_blue_pwm--);
+
+      if(LCD_LED_red_pwm <= LED_PWM_0)
+      {
+        LCDLedState = LCD_LED_RED_RAMP_UP;
+      }
+      break;
+
+    default:
+      LCDLedState = LCD_LED_RED_RAMP_UP;
+      break;
+  }
+}
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
