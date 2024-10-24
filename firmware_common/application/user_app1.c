@@ -62,6 +62,18 @@ Variable names shall start with "UserApp1_<type>" and be declared as static.
 static fnCode_type UserApp1_pfStateMachine;               /*!< @brief The state machine function pointer */
 //static u32 UserApp1_u32Timeout;                           /*!< @brief Timeout counter used across states */
 
+typedef enum
+{
+  blinkingRateStateOff,
+  blinkingRateState1Hz,
+  blinkingRateState2Hz,
+  blinkingRateState4Hz,
+  blinkingRateState8Hz,
+  numBlinkingRateState
+} blinkingRateState_t;
+
+static blinkingRateState_t yellowBlinkingState = blinkingRateStateOff;
+
 
 /**********************************************************************************************************************
 Function Definitions
@@ -74,6 +86,9 @@ Function Definitions
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*! @protectedsection */                                                                                            
 /*--------------------------------------------------------------------------------------------------------------------*/
+
+static void runBlinkingStateMachine(void);
+
 
 /*!--------------------------------------------------------------------------------------------------------------------
 @fn void UserApp1Initialize(void)
@@ -92,6 +107,16 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
+  LedOff(WHITE);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+
+
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -140,7 +165,43 @@ State Machine Function Definitions
 /* What does this state do? */
 static void UserApp1SM_Idle(void)
 {
-     
+
+  if(IsButtonPressed(BUTTON0))
+  {
+    LedOn(WHITE);
+  }
+  else
+  {
+    LedOff(WHITE);
+  }
+
+  if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+
+    if(yellowBlinkingState < numBlinkingRateState)
+    {
+      yellowBlinkingState++;
+    }
+    else
+    {
+      yellowBlinkingState = blinkingRateStateOff;
+    }
+    
+      runBlinkingStateMachine();
+  }
+
+  if(IsButtonHeld(BUTTON3, 2000))
+  {
+    LedOn(CYAN);
+  }
+  else if(!IsButtonPressed(BUTTON3))
+  {
+    LedOff(CYAN);
+  }
+
+
+
 } /* end UserApp1SM_Idle() */
      
 
@@ -152,7 +213,36 @@ static void UserApp1SM_Error(void)
 } /* end UserApp1SM_Error() */
 
 
+static void runBlinkingStateMachine(void)
+{
+  switch(yellowBlinkingState)
+  {
+    case blinkingRateStateOff:
+      LedOff(YELLOW);
+      break;
 
+    case blinkingRateState1Hz:
+      LedBlink(YELLOW, LED_1HZ);
+      break;
+
+    case blinkingRateState2Hz:
+      LedBlink(YELLOW, LED_2HZ);
+      break;
+    
+    case blinkingRateState4Hz:
+      LedBlink(YELLOW, LED_4HZ);
+      break;
+
+    case blinkingRateState8Hz:
+      LedBlink(YELLOW, LED_8HZ);
+      break;
+
+    default:
+      yellowBlinkingState = blinkingRateStateOff;
+      LedOff(YELLOW);
+      break;
+  }
+}
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* End of File                                                                                                        */
