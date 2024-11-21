@@ -173,6 +173,35 @@ static void UserApp1SM_Idle(void)
     DebugPrintf(InputBuffer);
     DebugLineFeed();
   }
+
+  if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+
+    charCount = DebugScanf(InputBuffer);
+    InputBuffer[charCount] = '\0';
+
+    DebugPrintf(MessagePrompt);
+    DebugLineFeed();
+    //print the top of the box
+    for(uint16_t i = 0; i<=charCount+1; i++)
+    {
+      DebugPrintf("*");
+    }
+    DebugLineFeed();
+
+    DebugPrintf("*");
+    DebugPrintf(InputBuffer);
+    DebugPrintf("*");
+    DebugLineFeed();
+
+    //print the bottom of the box
+    for(uint16_t i = 0; i<=charCount+1; i++)
+    {
+      DebugPrintf("*");
+    }
+    DebugLineFeed();
+  }
   
 } /* end UserApp1SM_Idle() */
      
