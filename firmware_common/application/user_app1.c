@@ -55,6 +55,9 @@ extern volatile u32 G_u32SystemFlags;                     /*!< @brief From main.
 extern volatile u32 G_u32ApplicationFlags;                /*!< @brief From main.c */
 
 
+extern u8 G_au8DebugScanfBuffer[DEBUG_SCANF_BUFFER_SIZE]; // From debug.c
+extern u8 G_u8DebugScanfCharCount;                        // From debug.c
+
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
 Variable names shall start with "UserApp1_<type>" and be declared as static.
@@ -92,6 +95,11 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
+
+
+
+
+
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -125,6 +133,7 @@ void UserApp1RunActiveState(void)
 {
   UserApp1_pfStateMachine();
 
+
 } /* end UserApp1RunActiveState */
 
 
@@ -140,7 +149,31 @@ State Machine Function Definitions
 /* What does this state do? */
 static void UserApp1SM_Idle(void)
 {
-     
+  static uint8_t NumberOfCharsMessage[] = "\r\nCharacter in buffer:";
+  static uint8_t MessagePrompt[] = "\r\nMessage:";
+  static uint8_t InputBuffer[DEBUG_SCANF_BUFFER_SIZE+1];
+  uint8_t charCount;
+
+  if(WasButtonPressed(BUTTON0))
+  {
+    ButtonAcknowledge(BUTTON0);
+    DebugPrintf(NumberOfCharsMessage);
+    DebugPrintNumber(G_u8DebugScanfCharCount);
+    DebugLineFeed();
+  }
+
+  if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+
+    charCount = DebugScanf(InputBuffer);
+    InputBuffer[charCount] = '\0';
+
+    DebugPrintf(MessagePrompt);
+    DebugPrintf(InputBuffer);
+    DebugLineFeed();
+  }
+  
 } /* end UserApp1SM_Idle() */
      
 
